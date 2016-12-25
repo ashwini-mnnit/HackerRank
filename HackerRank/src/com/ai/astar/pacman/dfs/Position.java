@@ -3,7 +3,7 @@ package com.ai.astar.pacman.dfs;
 import java.util.Comparator;
 
 enum ScoreType {
-	H_SCORE, F_SCORE, G_SCORE
+	F_SCORE, G_SCORE
 }
 
 public class Position {
@@ -11,8 +11,8 @@ public class Position {
 	private int x;
 	private int y;
 	private char value;
-	
-	private Position parent; 
+
+	private Position parent;
 
 	public Position getParent() {
 		return parent;
@@ -20,45 +20,6 @@ public class Position {
 
 	public void setParent(Position parent) {
 		this.parent = parent;
-	}
-
-	// this is not the main data about the Position, actually transient info.
-	// So, local class
-	class Scores {
-		double gScore;
-		double fScore;
-		double hScore;
-	}
-
-	public Scores scores;
-
-	public void setScore(ScoreType type, double val) throws Exception {
-		switch (type) {
-		case H_SCORE:
-			scores.hScore = val;
-			break;
-		case F_SCORE:
-			scores.fScore = val;
-			break;
-		case G_SCORE:
-			scores.gScore = val;
-			break;
-		default:
-			throw new Exception("Invalid Score Type");
-		}
-	}
-
-	public double getScore(ScoreType type) throws Exception {
-		switch (type) {
-		case H_SCORE:
-			return scores.hScore;
-		case F_SCORE:
-			return scores.fScore;
-		case G_SCORE:
-			return scores.gScore;
-		default:
-			throw new Exception("Invalid Score Type");
-		}
 	}
 
 	public Position(int x, int y, char value) {
@@ -70,20 +31,12 @@ public class Position {
 		this.scores = new Scores();
 	}
 
-	public Boolean hasFood() {
-		return value == '.' ? true : false;
-	}
-
-	public Boolean hasPacman() {
-		return value == 'P' ? true : false;
-	}
-
 	public Boolean isFree() {
-		return value == '-' ? true : false;
+		return (value != '%' && value != 'P') ? true : false;
 	}
-
-	public Boolean isWall() {
-		return value == '%' ? true : false;
+	
+	public char getval() {
+		return value;
 	}
 
 	public int getX() {
@@ -121,25 +74,58 @@ public class Position {
 		return true;
 	}
 
+	// this is not the main data about the Position, actually transient info.
+	// So, local class
+	class Scores {
+		double gScore = 0;
+		double fScore = 0;
+		double hScore = 0;
+	}
+
+	public Scores scores;
+
+	public void setScore(ScoreType type, double val) throws Exception {
+		switch (type) {
+		case F_SCORE:
+			scores.fScore = val;
+			break;
+		case G_SCORE:
+			scores.gScore = val;
+			break;
+		default:
+			throw new Exception("Invalid Score Type");
+		}
+	}
+
+	public double getScore(ScoreType type) throws Exception {
+		switch (type) {
+		case F_SCORE:
+			return scores.fScore;
+		case G_SCORE:
+			return scores.gScore;
+		default:
+			throw new Exception("Invalid Score Type");
+		}
+	}
 }
 
 class PositionFScoreComparator implements Comparator<Position> {
 	@Override
 	public int compare(Position x, Position y) {
-		double xHScore = 0.0;
-		double yHScore = 0.0;
+		double xFScore = 0.0;
+		double yFScore = 0.0;
 		try {
-			xHScore = x.getScore(ScoreType.H_SCORE);
-			yHScore = y.getScore(ScoreType.H_SCORE);
+			xFScore = x.getScore(ScoreType.F_SCORE);
+			yFScore = y.getScore(ScoreType.F_SCORE);
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
 
-		if (xHScore < yHScore) {
+		if (xFScore < yFScore) {
 			return -1;
 		}
-		if (xHScore > yHScore) {
+		if (xFScore > yFScore) {
 			return 1;
 		}
 		return 0;

@@ -39,10 +39,12 @@ public class AStar {
 		openListPosition.add(start);
 
 		while (!openListPosition.isEmpty()) {
+			// printArenaOnConsole(openListPosition, closedList);
 			Position currentPos = openListPosition.poll();
 			// if reached
 			if (currentPos.equals(end)) {
 				CalculatePath(currentPos);
+				return;
 			}
 
 			closedList.add(currentPos);
@@ -65,7 +67,30 @@ public class AStar {
 				}
 			}
 		}
-		System.out.println("NO path Exist !!!");;
+		System.out.println("NO path Exist !!!");
+
+	}
+
+	private void printArenaOnConsole(PriorityQueue<Position> openListPosition, ArrayList<Position> closedList) {
+		clearConsole();
+		for (int row = 0; row < this.arenaRows; row++) {
+			for (int col = 0; col < this.arenaCols; col++) {
+				if (closedList.contains(this.arena[row][col]))
+					System.out.print('C');
+				else if (openListPosition.contains(this.arena[row][col]))
+					System.out.print('O');
+				else
+					System.out.print(this.arena[row][col].getval());
+			}
+			System.out.println();
+		}
+
+	}
+
+	private void clearConsole() {
+		for (int i = 0; i < 25; i++) {
+			System.out.println();
+		}
 	}
 
 	private ArrayList<Position> GetNeighbors(Position currentPos, Position[][] arena) {
@@ -103,25 +128,60 @@ public class AStar {
 		return rv;
 	}
 
-	private void CalculatePath(Position currentPos) {
+	private void CalculatePath(Position currentPos) throws Exception {
 		Stack<Position> stack = new Stack<Position>();
 		while (currentPos.getParent() != null) {
 			stack.add(currentPos);
 			currentPos = currentPos.getParent();
 		}
+		System.out.println("We have a Path------>");
 		System.out.println("----------------------------------------");
-		while (!stack.isEmpty()) {
-			System.err.println(stack.pop().toString());
-		}
+		printArenaWithPath(stack);
+		// while (!stack.isEmpty()) {
+		// System.err.println(stack.pop().toString());
+		// }
 		System.out.println("----------------------------------------");
 
+	}
+
+	private void printArenaWithPath(Stack<Position> stack) throws Exception {
+		for (int row = 0; row < this.arenaRows; row++) {
+			for (int col = 0; col < this.arenaCols; col++) {
+				if (stack.contains(this.arena[row][col])) {
+					stack.pop();
+					Position nextPos = stack.peek();
+					System.out.print(GetDir(this.arena[row][col], nextPos));
+				}
+
+				else
+					System.out.print(this.arena[row][col].getval());
+			}
+			System.out.println();
+		}
+	}
+
+	private char GetDir(Position position, Position nextPos) throws Exception {
+		// IsLeft
+		if (position.getX() == nextPos.getX() && position.getY() - 1 == nextPos.getY())
+			return '<';
+		// IsRight
+		if (position.getX() == nextPos.getX() && position.getY() + 1 == nextPos.getY())
+			return '>';
+		// IsUp
+		if (position.getX() - 1 == nextPos.getX() && position.getY() == nextPos.getY())
+			return '^';
+		// IsDown
+		if (position.getX() + 1 == nextPos.getX() && position.getY() == nextPos.getY())
+			return '^';
+		
+		throw new Exception("Incorrect Direction from "+ position.toString()+" to "+ nextPos.toString());
 	}
 
 	private double Heuristics(Position start, Position end) {
 		// Calculate Heuristics.
 		return Utils.getEuclideanDistance(start.getX(), start.getY(), end.getX(), end.getY());
 	}
-	
+
 	private void ReadData() {
 		BufferedReader bufferReader;
 		try {
